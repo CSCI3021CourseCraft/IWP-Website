@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CourseCraft - Log in</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 380px; margin: 60px auto; }
+    label { display: block; margin-top: 12px; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { margin-top: 16px; padding: 8px 16px; }
+    .error { color: #b00020; display: none; }
+  </style>
+</head>
+<body>
+  <h2>CourseCraft</h2>
+  <p class="error" id="err">Wrong email or password.</p>
+  <form action="login" method="post">
+    <label>Email <input type="email" name="email" required></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Log in</button>
+  </form>
+  <p><small>Test accounts: demo@coursecraft.test or example@coursecraft.test, password: demo1234</small></p>
+  <script>
+    if (location.search.indexOf("error=1") !== -1) {
+      document.getElementById("err").style.display = "block";
+    }
+  </script>
+</body>
+</html>

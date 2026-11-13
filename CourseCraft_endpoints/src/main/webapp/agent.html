@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CourseCraft - Study Agent</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 760px; margin: 30px auto; padding: 0 12px; }
+    select, textarea { width: 100%; padding: 8px; box-sizing: border-box; margin-top: 6px; }
+    button { margin-top: 10px; padding: 8px 16px; }
+    pre { background: #f4f4f4; padding: 12px; overflow-x: auto; white-space: pre-wrap; }
+    .row { margin-top: 16px; }
+    section { border-top: 1px solid #ddd; margin-top: 24px; padding-top: 8px; }
+    li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <h2>CourseCraft Study Agent</h2>
+  <p><a href="logout">Log out</a></p>
+
+  <div class="row">
+    <label for="course">Course</label>
+    <select id="course"></select>
+  </div>
+
+  <!-- Database -> servlet -> page -->
+  <section>
+    <h3>My notes for this course</h3>
+    <ul id="notes"></ul>
+  </section>
+
+  <!-- Form -> servlet -> database (POST to the save_study_plan tool endpoint) -->
+  <section>
+    <h3>Save a study plan by hand</h3>
+    <form id="planForm">
+      <textarea id="planText" rows="3" required>Day 1: review notes. Day 2: practice questions.</textarea>
+      <button type="submit">Save plan</button>
+    </form>
+    <pre id="planOut">(nothing saved yet)</pre>
+  </section>
+
+  <script>
+    var sel = document.getElementById("course");
+    var notesList = document.getElementById("notes");
+
+    async function loadCourses() {
+      var r = await fetch("api/courses");
+      if (r.status === 401) { location.href = "index.html"; return; }
+      var d = await r.json();
+      (d.courses || []).forEach(function (c) {
+        var o = document.createElement("option");
+        o.value = c.id;
+        o.textContent = c.name;          // textContent: data is never treated as HTML
+        sel.appendChild(o);
+      });
+      loadNotes();
+    }
+
+    async function loadNotes() {
+      notesList.textContent = "";
+      var r = await fetch("api/tools/get_course_notes?course_id=" + encodeURIComponent(sel.value));
+      if (r.status === 401) { location.href = "index.html"; return; }
+      var d = await r.json();
+      if (!d.success) {
+        var err = document.createElement("li");
+        err.textContent = d.error;
+        notesList.appendChild(err);
+        return;
+      }
+      d.notes.forEach(function (n) {
+        var li = document.createElement("li");
+        var b = document.createElement("b");
+        b.textContent = n.title;
+        li.appendChild(b);
+        li.appendChild(document.createTextNode(": " + n.body));
+        notesList.appendChild(li);
+      });
+      if (d.notes.length === 0) { notesList.textContent = "No notes yet."; }
+    }
+    sel.onchange = loadNotes;
+
+    document.getElementById("planForm").onsubmit = async function (e) {
+      e.preventDefault();
+      var body = new URLSearchParams({ course_id: sel.value,
+                                       plan_text: document.getElementById("planText").value });
+      var r = await fetch("api/tools/save_study_plan", { method: "POST", body: body });
+      if (r.status === 401) { location.href = "index.html"; return; }
+      document.getElementById("planOut").textContent = JSON.stringify(await r.json(), null, 2);
+    };
+
+    loadCourses();
+  </script>
+</body>
+</html>

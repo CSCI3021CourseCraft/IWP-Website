@@ -1,0 +1,11 @@
+# OPTIONAL fallback. The recommended way is to set environment variables instead (see README):
+#   DB_URL, DB_USER, DB_PASSWORD, LLM_API_KEY   (db.url -> DB_URL, llm.api.key -> LLM_API_KEY, ...)
+#
+# If you use this file instead: copy it to config.properties (same folder) and fill in real values.
+# config.properties is listed in .gitignore and must NEVER be committed or put in the submission zip.
+db.url=jdbc:postgresql://YOUR-POOLER-HOST:5432/postgres?sslmode=require
+db.user=postgres.YOUR-PROJECT-REF
+db.password=CHANGE_ME
+
+llm.api.key=CHANGE_ME
+llm.model=llama-3.3-70b-versatile

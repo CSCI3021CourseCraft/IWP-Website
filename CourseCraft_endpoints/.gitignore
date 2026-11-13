@@ -1,0 +1,11 @@
+# Secrets (never commit)
+src/main/resources/config.properties
+.env
+setenv.bat
+
+# Build output and IDE files
+target/
+nbproject/private/
+.idea/
+*.iml
+*.log
