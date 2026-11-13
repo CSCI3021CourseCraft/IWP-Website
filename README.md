@@ -44,7 +44,7 @@ All foreign keys use ON DELETE CASCADE. There is an index on every foreign key a
 
 | Servlet | URL | Method | Agent tool |
 |---|---|---|---|
-| LoginServlet | /login | POST | (creates the session) |
+| LoginServlet | /login | POST | Creates the session |
 | LogoutServlet | /logout | GET | |
 | CoursesServlet | /api/courses | GET | |
 | NotesToolServlet | /api/tools/get_course_notes | GET | get_course_notes |
