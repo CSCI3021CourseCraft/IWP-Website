@@ -1,5 +1,4 @@
-# CourseCraft-IWP-Website
-# CourseCraft - (Milestone 1)
+# IWP-Website - CourseCraft - (Milestone 1)
 
 Team: Anna Zagrai, Abimael Lozano. 
 
