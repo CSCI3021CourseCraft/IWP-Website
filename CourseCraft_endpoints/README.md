@@ -5,9 +5,9 @@ Course: CSCI 3021, Fall 2026.
 Repository: github.com/CSCI3021CourseCraft/IWP-Website
 
 ## Database
-- **Database and tool:** Supabase (hosted PostgreSQL). The proposal said MySQL; for this milestone we switched to Supabase because it is hosted and shared by both teammates.
+- **Database and tool:** Supabase (hosted PostgreSQL). We decided to use Supabase because it is hosted and shared by both teammates.
 - **Driver:** PostgreSQL JDBC 42.7.4 (`org.postgresql.Driver`), added in `pom.xml`.
-- **Script:** `[SCRIPT NAME] creates and fills every table. Paste it into the Supabase SQL Editor and run it; it can be re-run (it drops and rebuilds the tables).
+- **Script:** [SCRIPT NAME] creates and fills every table. Paste it into the Supabase SQL Editor and run it; it can be re-run (it drops and rebuilds the tables).
 - **Tables and relationships**
 
 | Table | Purpose | Relationships |
@@ -49,7 +49,7 @@ All foreign keys use ON DELETE CASCADE. There is an index on every foreign key a
 | MaterialsToolServlet | /api/tools/get_course_materials | GET | get_course_materials |
 | SavePlanToolServlet | /api/tools/save_study_plan | POST | save_study_plan (changes data) |
 | AgentServlet | /api/agent | POST | one plan-act-observe cycle |
-| DbTestServlet | /dbtest | GET | (connection check) |
+| DbTestServlet | /dbtest | GET | Connection check |
 
 Every tool endpoint checks the session (401 if not logged in), validates its input (400), checks that the course belongs to the logged in student (403), uses `PreparedStatement`, closes its connection in `finally`, and returns JSON with `success` or `error`.
 
