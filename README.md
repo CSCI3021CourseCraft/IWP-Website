@@ -37,7 +37,7 @@ All foreign keys use ON DELETE CASCADE. There is an index on every foreign key a
    - **Host:** `<fill in: aws-N-REGION.pooler.supabase.com>` (Supabase > Connect > Session pooler), **port** 5432, **database** `postgres`, **driver** `org.postgresql.Driver`.
    - Optional: `LLM_MODEL` (default `llama-3.3-70b-versatile`).
    - Nothing secret is in the repository or the zip. `src/main/resources/config.properties` is an optional alternative and is listed in `.gitignore`.
-3. Build with Maven and run on Tomcat 9 (Java 17+). Open `http://localhost:8080/CourseCraft/`.
+3. Build with Maven and run on Tomcat 10 (Jakarta). Open `http://localhost:8080`.
 4. Check the connection at `/dbtest`, then log in as `demo@coursecraft.test` or `example@coursecraft.test` with password `demo1234`.
 
 ## Servlets and tools
@@ -55,11 +55,11 @@ All foreign keys use ON DELETE CASCADE. There is an index on every foreign key a
 
 Every tool endpoint checks the session (401 if not logged in), validates its input (400), checks that the course belongs to the logged in student (403), uses `PreparedStatement`, closes its connection in `finally`, and returns JSON with `success` or `error`.
 
-**Agent round trip:** `AgentServlet` sends the goal and the three tool definitions to the Groq API with `java.net.http.HttpClient`, runs the one tool the model chooses through the same `ToolService` code the endpoints use (as the logged-in student), writes the call and its result to `agent_log`, and returns the result to the page.
+**Agent round trip:** `AgentServlet` sends the goal and the three tool definitions to the Groq API with `jakarta.net.http.HttpClient`, runs the one tool the model chooses through the same `ToolService` code the endpoints use (as the logged-in student), writes the call and its result to `agent_log`, and returns the result to the page.
 
 ## Who built what
 - **Anna:** (write one paragraph)
-- **Abimael:** (write one paragraph)
+- **Abimael:** I built the tool endpoints and wrote the documentation. The three servlets (NotesToolServlet, MaterialsToolServlet and SavePlanToolServlet) each check that the user is logged in, validate their inputs, and return JSON with a success or error field. They use JDBC PreparedStatements and close their connections in finally blocks. Reading notes and materials is read-only, and save_study_plan inserts a row into study_plans, so it changes data. I also made sure a student can only reach their own courses, which returns a 403 otherwise. I tested each endpoint against the Supabase database, covering the 400, 401 and 403 cases, and wrote the README, including the setup steps and the table of servlets and URLs.
 
 ## AI tools used
 (State which AI tools helped write code)
