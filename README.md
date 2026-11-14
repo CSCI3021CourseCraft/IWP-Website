@@ -62,6 +62,3 @@ Every tool endpoint checks the session (401 if not logged in), validates its inp
 
 - 
 - **Abimael:** I built the tool endpoints and wrote the documentation. The three servlets (NotesToolServlet, MaterialsToolServlet and SavePlanToolServlet) each check that the user is logged in, validate their inputs, and return JSON with a success or error field. They use JDBC PreparedStatements and close their connections in finally blocks. Reading notes and materials is read-only, and save_study_plan inserts a row into study_plans, so it changes data. I also made sure a student can only reach their own courses, which returns a 403 otherwise. I tested each endpoint against the Supabase database, covering the 400, 401 and 403 cases, and wrote the README, including the setup steps and the table of servlets and URLs.
-
-## AI tools used
-(State which AI tools helped write code)
