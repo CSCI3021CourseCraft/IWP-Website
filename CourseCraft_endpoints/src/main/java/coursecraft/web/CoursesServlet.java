@@ -3,10 +3,10 @@ package coursecraft.web;
 import coursecraft.service.ToolException;
 import coursecraft.service.ToolService;
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /** GET /api/courses: the logged-in student's courses (database -> servlet -> page). */
 @WebServlet("/api/courses")
@@ -26,3 +26,4 @@ public class CoursesServlet extends BaseApiServlet {
         }
     }
 }
+

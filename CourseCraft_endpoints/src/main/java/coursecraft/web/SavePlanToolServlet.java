@@ -3,10 +3,10 @@ package coursecraft.web;
 import coursecraft.service.ToolException;
 import coursecraft.service.ToolService;
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /** Tool: save_study_plan (changes data).  POST /api/tools/save_study_plan  course_id=1&plan_text=... */
 @WebServlet("/api/tools/save_study_plan")
