@@ -24,7 +24,7 @@ import java.time.Duration;
 public final class GroqClient {
 
     private static final String DEFAULT_URL = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
+    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b";
     private static final HttpClient HTTP = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10)).build();
 

@@ -35,7 +35,7 @@ All foreign keys use ON DELETE CASCADE. There is an index on every foreign key a
 | `LLM_API_KEY` | the Groq API key (read only from this variable) |
 
    - **Host:** `<fill in: aws-N-REGION.pooler.supabase.com>` (Supabase > Connect > Session pooler), **port** 5432, **database** `postgres`, **driver** `org.postgresql.Driver`.
-   - Optional: `LLM_MODEL` (default `llama-3.3-70b-versatile`).
+   - Optional: `LLM_MODEL` (default `openai/gpt-oss-120b`).
    - Nothing secret is in the repository or the zip. `src/main/resources/config.properties` is an optional alternative and is listed in `.gitignore`.
 3. Build with Maven and run on Tomcat 10 (Jakarta). Open `http://localhost:8080`.
 4. Check the connection at `/dbtest`, then log in as `demo@coursecraft.test` or `example@coursecraft.test` with password `demo1234`.
