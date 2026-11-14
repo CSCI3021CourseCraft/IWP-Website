@@ -9,7 +9,7 @@ Repository: github.com/CSCI3021CourseCraft/IWP-Website
 ## Database
 - **Database and tool:** Supabase (hosted PostgreSQL). We decided to use Supabase because it is hosted and shared by both teammates.
 - **Driver:** PostgreSQL JDBC 42.7.4 (`org.postgresql.Driver`), added in `pom.xml`.
-- **Script:** [SCRIPT NAME] creates and fills every table. Paste it into the Supabase SQL Editor and run it; it can be re-run (it drops and rebuilds the tables).
+- **Script:** `coursecraft_postgres` creates and fills every table. Paste it into the Supabase SQL Editor and run it; it can be re-run (it drops and rebuilds the tables).
 - **Tables and relationships**
 
 | Table | Purpose | Relationships |
