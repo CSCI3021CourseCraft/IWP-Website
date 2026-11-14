@@ -22,6 +22,14 @@
     <select id="course"></select>
   </div>
 
+  <!-- Form -> servlet -> LLM -> tool -> database (the agent) -->
+  <section>
+    <h3>Ask the study agent</h3>
+    <textarea id="goal" rows="2">Show me my notes for this course</textarea>
+    <button id="askBtn" type="button">Ask agent</button>
+    <div id="agentOut"><pre>(nothing yet)</pre></div>
+  </section>
+
   <!-- Database -> servlet -> page -->
   <section>
     <h3>My notes for this course</h3>
@@ -85,6 +93,47 @@
       var r = await fetch("api/tools/save_study_plan", { method: "POST", body: body });
       if (r.status === 401) { location.href = "index.html"; return; }
       document.getElementById("planOut").textContent = JSON.stringify(await r.json(), null, 2);
+    };
+
+    // ---- the agent: POST /api/agent, then show every step it took ----
+    var agentOut = document.getElementById("agentOut");
+
+    function addPre(parent, label, value) {
+      var h = document.createElement("div");
+      h.textContent = label;
+      h.style.fontWeight = "bold";
+      h.style.marginTop = "8px";
+      parent.appendChild(h);
+      var pre = document.createElement("pre");
+      pre.textContent = (typeof value === "string") ? value : JSON.stringify(value, null, 2);
+      parent.appendChild(pre);
+    }
+
+    document.getElementById("askBtn").onclick = async function () {
+      var btn = this;
+      btn.disabled = true;
+      agentOut.textContent = "Thinking...";
+      try {
+        var body = new URLSearchParams({ goal: document.getElementById("goal").value,
+                                         course_id: sel.value });
+        var r = await fetch("api/agent", { method: "POST", body: body });
+        if (r.status === 401) { location.href = "index.html"; return; }
+        var d = await r.json();
+        agentOut.textContent = "";
+        if (!d.success) { addPre(agentOut, "Error", d.error); return; }
+        (d.steps || []).forEach(function (st) {
+          addPre(agentOut, "Step " + st.step + ": " + st.tool + (st.success ? "" : "  (failed)"),
+                 { arguments: st.arguments, result: st.result });
+        });
+        if (d.answer) { addPre(agentOut, "Agent says", d.answer); }
+        if (d.llm_error) { addPre(agentOut, "Stopped early", d.llm_error); }
+        if (!d.steps.length && !d.answer) { addPre(agentOut, "Agent", "(no tool call and no answer)"); }
+        loadNotes();                      // a saved plan or new notes may have changed things
+      } catch (e) {
+        agentOut.textContent = "Request failed: " + e;
+      } finally {
+        btn.disabled = false;
+      }
     };
 
     loadCourses();

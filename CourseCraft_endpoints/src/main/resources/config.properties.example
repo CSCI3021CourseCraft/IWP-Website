@@ -9,3 +9,6 @@ db.password=CHANGE_ME
 
 llm.api.key=CHANGE_ME
 llm.model=llama-3.3-70b-versatile
+
+# Plan-act-observe cycles per request. 1 = one tool call (milestone). Up to 8 lets the model chain tools.
+agent.max.steps=1

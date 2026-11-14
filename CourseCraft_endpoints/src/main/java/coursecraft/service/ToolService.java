@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +22,8 @@ public class ToolService {
     private static final Set<String> ITEM_TYPES =
             new HashSet<>(Arrays.asList("assignment", "module", "quiz", "file"));
     private static final int MAX_PLAN_LENGTH = 5000;
+    private static final double WEAK_PERCENT = 70.0;
+    private static final int MAX_LOG_LENGTH = 20000;
 
     // ---------- helpers ----------
     private static JsonObject ok() {
@@ -137,7 +138,47 @@ public class ToolService {
         }
     }
 
-    // ---------- tool 3: WRITE (changes application state) ----------
+    // ---------- tool 3: read ----------
+    /** Quiz scores per topic (from the student's quizzes), each flagged weak if under 70%. */
+    public static JsonObject getQuizResults(int userId, int courseId) throws ToolException {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DbUtil.getConnection();
+            requireOwnedCourse(conn, userId, courseId);
+            ps = conn.prepareStatement(
+                    "SELECT ci.title AS quiz_title, ci.due_date, q.topic, q.score, q.max_score "
+                    + "FROM quiz_results q JOIN canvas_items ci ON q.item_id = ci.id "
+                    + "WHERE ci.course_id = ? ORDER BY ci.due_date, q.topic");
+            ps.setInt(1, courseId);
+            rs = ps.executeQuery();
+            JsonArray results = new JsonArray();
+            while (rs.next()) {
+                double score = rs.getDouble("score");
+                double max = rs.getDouble("max_score");
+                double pct = max > 0 ? Math.round(1000.0 * score / max) / 10.0 : 0;
+                JsonObject r = new JsonObject();
+                r.addProperty("quiz", rs.getString("quiz_title"));
+                r.addProperty("topic", rs.getString("topic"));
+                r.addProperty("score", score);
+                r.addProperty("max_score", max);
+                r.addProperty("percent", pct);
+                r.addProperty("weak", pct < WEAK_PERCENT);
+                results.add(r);
+            }
+            JsonObject out = ok();
+            out.addProperty("course_id", courseId);
+            out.add("results", results);
+            return out;
+        } catch (SQLException e) {
+            throw dbError(e);
+        } finally {
+            DbUtil.close(rs, ps, conn);
+        }
+    }
+
+    // ---------- tool 4: WRITE (changes application state) ----------
     public static JsonObject saveStudyPlan(int userId, int courseId, String planText) throws ToolException {
         if (planText == null || planText.trim().isEmpty()) {
             throw new ToolException(400, "plan_text is required");
@@ -153,7 +194,7 @@ public class ToolService {
             requireOwnedCourse(conn, userId, courseId);
             ps = conn.prepareStatement(
                     "INSERT INTO study_plans (course_id, plan_text) VALUES (?, ?)",
-                    Statement.RETURN_GENERATED_KEYS);
+                    new String[] {"id"});
             ps.setInt(1, courseId);
             ps.setString(2, planText.trim());
             ps.executeUpdate();
@@ -161,7 +202,7 @@ public class ToolService {
             JsonObject out = ok();
             out.addProperty("course_id", courseId);
             if (keys.next()) {
-                out.addProperty("plan_id", keys.getInt("id"));
+                out.addProperty("plan_id", keys.getInt(1));
             }
             return out;
         } catch (SQLException e) {
@@ -201,10 +242,10 @@ public class ToolService {
     // ---------- the agent's dispatcher ----------
     public static boolean isKnownTool(String name) {
         return "get_course_notes".equals(name) || "get_course_materials".equals(name)
-                || "save_study_plan".equals(name);
+                || "get_quiz_results".equals(name) || "save_study_plan".equals(name);
     }
 
-    /** Runs a tool the model asked for. Only whitelisted tools; userId always comes from the session. 
+    /** Runs a tool the model asked for. Only whitelisted tools; userId always comes from the session. */
     public static JsonObject executeTool(int userId, String tool, JsonObject input) throws ToolException {
         if (!isKnownTool(tool)) {
             throw new ToolException(400, "Unknown tool: " + tool);
@@ -214,11 +255,12 @@ public class ToolService {
                 return getCourseNotes(userId, intArg(input, "course_id"));
             case "get_course_materials":
                 return getCourseMaterials(userId, intArg(input, "course_id"), strArg(input, "type", false));
+            case "get_quiz_results":
+                return getQuizResults(userId, intArg(input, "course_id"));
             default:
                 return saveStudyPlan(userId, intArg(input, "course_id"), strArg(input, "plan_text", true));
         }
     }
-    */
 
     private static int intArg(JsonObject input, String name) throws ToolException {
         JsonElement e = input.get(name);
@@ -252,8 +294,9 @@ public class ToolService {
         }
     }
 
-    /** ---------- agent log ----------
-    public static void logCall(int userId, String toolName, String input, String output) {
+    // ---------- agent log: one row per tool call the agent makes ----------
+    /** Never throws: a logging problem must not break the request. */
+    public static void logCall(int userId, String toolName, String input, String output, boolean success) {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
@@ -261,10 +304,11 @@ public class ToolService {
             ps = conn.prepareStatement(
                     "INSERT INTO agent_log (user_id, tool_name, input, output, success) VALUES (?, ?, ?, ?, ?)");
             ps.setInt(1, userId);
-            ps.setString(2, toolName);
-            ps.setString(3, input);
-            ps.setString(4, output == null || output.length() <= 20000 ? output : output.substring(0, 20000));
-            ps.setBoolean(5, output != null && output.contains("\"success\":true"));
+            ps.setString(2, toolName == null ? "(none)" : toolName);
+            ps.setString(3, input == null ? "{}" : input);
+            ps.setString(4, output == null || output.length() <= MAX_LOG_LENGTH
+                    ? output : output.substring(0, MAX_LOG_LENGTH));
+            ps.setBoolean(5, success);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -272,5 +316,4 @@ public class ToolService {
             DbUtil.close(ps, conn);
         }
     }
-    */
 }

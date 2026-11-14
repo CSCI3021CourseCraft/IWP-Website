@@ -9,3 +9,6 @@ nbproject/private/
 .idea/
 *.iml
 *.log
+.vscode/
+*.env
+setenv.sh
